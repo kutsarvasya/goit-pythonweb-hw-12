@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, UTC
 from typing import Optional
+from src.services.redis_cache import get_cache, set_cache
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -17,11 +18,29 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 class Hash:
+    """
+    Password hashing utility.
+
+    Provides methods for hashing plain passwords
+    and verifying passwords against stored hashes.
+    """
+
     @staticmethod
     def verify_password(
         plain_password,
         hashed_password,
     ):
+        """
+        Verify plain password against hashed password.
+
+        Args:
+            plain_password: Password entered by user.
+            hashed_password: Password hash stored in database.
+
+        Returns:
+            True if password is valid, otherwise False.
+        """
+
         return pwd_context.verify(
             plain_password,
             hashed_password,
@@ -29,6 +48,16 @@ class Hash:
 
     @staticmethod
     def get_password_hash(password: str):
+        """
+        Generate password hash.
+
+        Args:
+            password: Plain user password.
+
+        Returns:
+            Hashed password string.
+        """
+
         return pwd_context.hash(password)
 
 
@@ -36,6 +65,17 @@ async def create_access_token(
     data: dict,
     expires_delta: Optional[int] = None,
 ):
+    """
+    Create JWT access token.
+
+    Args:
+        data: Payload data to encode into token.
+        expires_delta: Optional token lifetime in seconds.
+
+    Returns:
+        Encoded JWT access token.
+    """
+
     to_encode = data.copy()
 
     if expires_delta:
@@ -58,6 +98,23 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Retrieve current authenticated user from JWT token.
+
+    Decodes access token, extracts user email,
+    and loads user from cache or database.
+
+    Args:
+        token: JWT access token from Authorization header.
+        db: Database session.
+
+    Returns:
+        Current authenticated user.
+
+    Raises:
+        HTTPException: If token is invalid or user does not exist.
+    """
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -79,6 +136,15 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
+    cache_key = f"user:{email}"
+
+    cached_user = await get_cache(cache_key)
+
+    if cached_user:
+        print("USER FROM REDIS")
+        return cached_user
+
+    print("USER FROM DATABASE")
     repo = UserRepository(db)
 
     user = await repo.get_user_by_email(email)
@@ -86,10 +152,22 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
 
+    await set_cache(cache_key, user)
+
     return user
 
 
 async def create_email_token(data: dict):
+    """
+    Create email verification token.
+
+    Args:
+        data: Payload data containing user email.
+
+    Returns:
+        Encoded JWT email verification token.
+    """
+
     to_encode = data.copy()
 
     expire = datetime.now(UTC) + timedelta(days=7)
@@ -105,6 +183,19 @@ async def create_email_token(data: dict):
 
 
 async def get_email_from_token(token: str):
+    """
+    Extract email from verification token.
+
+    Args:
+        token: Email verification JWT token.
+
+    Returns:
+        Email address stored in token.
+
+    Raises:
+        HTTPException: If token is invalid.
+    """
+
     try:
         payload = jwt.decode(
             token,

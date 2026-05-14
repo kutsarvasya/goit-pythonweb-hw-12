@@ -24,6 +24,21 @@ async def me(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Retrieve current authenticated user information.
+
+    Endpoint is protected with JWT authentication
+    and rate limiting.
+
+    Args:
+        request: HTTP request object.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        Current user data.
+    """
+
     return user
 
 
@@ -36,6 +51,21 @@ async def update_avatar_user(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Upload and update user avatar.
+
+    Uploads image file to Cloudinary
+    and saves avatar URL in the database.
+
+    Args:
+        file: Uploaded avatar image.
+        user: Current authenticated user.
+        db: Database session.
+
+    Returns:
+        Updated user object with avatar URL.
+    """
+
     avatar_url = UploadFileService(
         config.CLD_NAME,
         config.CLD_API_KEY,

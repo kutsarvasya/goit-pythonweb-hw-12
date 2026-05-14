@@ -19,6 +19,19 @@ async def get_contacts(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Retrieve a list of user contacts.
+
+    Args:
+        skip: Number of records to skip.
+        limit: Maximum number of records to return.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        List of contacts.
+    """
+
     repo = ContactRepository(db)
     return await repo.get_contacts(skip, limit, user)
 
@@ -29,6 +42,18 @@ async def search_contacts(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Search contacts by first name, last name, or email.
+
+    Args:
+        query: Search query string.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        List of matching contacts.
+    """
+
     repo = ContactRepository(db)
     return await repo.search_contacts(query, user)
 
@@ -38,6 +63,20 @@ async def get_upcoming_birthdays(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Retrieve contacts with upcoming birthdays.
+
+    Returns contacts whose birthdays occur
+    within the next seven days.
+
+    Args:
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        List of contacts with upcoming birthdays.
+    """
+
     repo = ContactRepository(db)
     return await repo.get_upcoming_birthdays(user)
 
@@ -48,6 +87,21 @@ async def get_contact(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Retrieve contact by ID.
+
+    Args:
+        contact_id: Contact identifier.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        Contact object.
+
+    Raises:
+        HTTPException: If contact is not found.
+    """
+
     repo = ContactRepository(db)
     contact = await repo.get_contact_by_id(contact_id, user)
 
@@ -66,6 +120,18 @@ async def create_contact(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Create a new contact.
+
+    Args:
+        body: Contact data.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        Created contact object.
+    """
+
     repo = ContactRepository(db)
     return await repo.create_contact(body, user)
 
@@ -77,6 +143,22 @@ async def update_contact(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Update existing contact.
+
+    Args:
+        contact_id: Contact identifier.
+        body: Updated contact data.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        Updated contact object.
+
+    Raises:
+        HTTPException: If contact is not found.
+    """
+
     repo = ContactRepository(db)
     contact = await repo.update_contact(contact_id, body, user)
 
@@ -95,6 +177,21 @@ async def delete_contact(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    """
+    Delete contact by ID.
+
+    Args:
+        contact_id: Contact identifier.
+        db: Database session.
+        user: Current authenticated user.
+
+    Returns:
+        Deleted contact object.
+
+    Raises:
+        HTTPException: If contact is not found.
+    """
+
     repo = ContactRepository(db)
     contact = await repo.remove_contact(contact_id, user)
 

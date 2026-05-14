@@ -5,10 +5,21 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
+    """
+    Base class for all database models.
+    """
+
     pass
 
 
 class User(Base):
+    """
+    User database model.
+
+    Stores user authentication data,
+    avatar URL, and email confirmation status.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -21,6 +32,13 @@ class User(Base):
 
 
 class Contact(Base):
+    """
+    Contact database model.
+
+    Stores personal contact information
+    associated with a specific user.
+    """
+
     __tablename__ = "contacts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -35,4 +53,5 @@ class Contact(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
+
     user: Mapped["User"] = relationship(backref="contacts")

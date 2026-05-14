@@ -7,6 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api import contacts, auth, users
 from src.services.limiter import limiter
 
+"""
+Main application entry point.
+
+Configures FastAPI application,
+CORS middleware, rate limiting,
+and API routers.
+"""
+
 app = FastAPI()
 
 origins = [
@@ -21,6 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.state.limiter = limiter
 
 app.add_exception_handler(
@@ -36,6 +45,10 @@ app.include_router(users.router, prefix="/api")
 
 
 if __name__ == "__main__":
+    """
+    Run FastAPI application with Uvicorn server.
+    """
+
     import uvicorn
 
     uvicorn.run(
