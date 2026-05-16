@@ -1,34 +1,39 @@
 # Contacts API
 
-A REST API for managing contacts with authentication, email verification, rate limiting, and avatar upload.
+Contacts API is a RESTful web application for managing personal contacts with authentication and user-based access control.
 
-Built with FastAPI, PostgreSQL, SQLAlchemy, Alembic, JWT, Redis, Cloudinary, Docker, and Poetry.
+The project is built with FastAPI and includes JWT authentication, email verification, password reset, Redis caching, avatar uploads, rate limiting, Docker support, automated tests, and Sphinx documentation.
 
 ---
 
 ## Features
 
-- user registration and login
-- password hashing
-- JWT authentication
+- user registration and authentication
+- JWT access tokens
+- password hashing with bcrypt
 - email verification
 - resend verification email
-- get current user profile
-- upload user avatar with Cloudinary
-- rate limiting for `/api/users/me`
-- CORS support
-- create, read, update, delete contacts
-- search contacts by first name, last name, or email
-- get contacts with birthdays in the next 7 days
-- users can access only their own contacts
+- password reset via email
+- Redis caching for authenticated users
+- role-based access (`user` / `admin`)
+- upload avatars using Cloudinary
+- rate limiting with SlowAPI
+- CRUD operations for contacts
+- contact search by first name, last name, or email
+- upcoming birthdays endpoint
+- access only to personal contacts
+- asynchronous PostgreSQL database operations
+- Docker and Docker Compose support
+- unit and integration testing
+- Sphinx documentation
 
 ---
 
-## Tech Stack
+## Technology Stack
 
-- Python
+- Python 3
 - FastAPI
-- SQLAlchemy async
+- SQLAlchemy Async
 - PostgreSQL
 - Alembic
 - Pydantic
@@ -37,9 +42,11 @@ Built with FastAPI, PostgreSQL, SQLAlchemy, Alembic, JWT, Redis, Cloudinary, Doc
 - SlowAPI
 - FastAPI-Mail
 - Cloudinary
+- Pytest
 - Docker
 - Docker Compose
 - Poetry
+- Sphinx
 
 ---
 
@@ -48,8 +55,14 @@ Built with FastAPI, PostgreSQL, SQLAlchemy, Alembic, JWT, Redis, Cloudinary, Doc
 Clone the repository:
 
 ```bash
-git clone <repo-url>
+git clone <repository-url>
 cd <project-folder>
+```
+
+Install dependencies:
+
+```bash
+poetry install
 ```
 
 ---
@@ -65,11 +78,11 @@ JWT_SECRET=your_secret_key
 JWT_ALGORITHM=HS256
 JWT_EXPIRATION_SECONDS=3600
 
-MAIL_USERNAME=your_email@meta.ua
-MAIL_PASSWORD=your_mail_password
-MAIL_FROM=your_email@meta.ua
+MAIL_USERNAME=your_email@example.com
+MAIL_PASSWORD=your_password
+MAIL_FROM=your_email@example.com
 MAIL_PORT=465
-MAIL_SERVER=smtp.meta.ua
+MAIL_SERVER=smtp.example.com
 MAIL_FROM_NAME=Contacts API
 MAIL_STARTTLS=False
 MAIL_SSL_TLS=True
@@ -85,15 +98,17 @@ REDIS_URL=redis://redis:6379
 
 ---
 
-## Run with Docker Compose
+## Running the Application
 
-Build and start all services:
+### Run with Docker Compose
+
+Build and start containers:
 
 ```bash
 docker compose up --build
 ```
 
-Run containers in background:
+Run in background:
 
 ```bash
 docker compose up -d
@@ -107,7 +122,23 @@ docker compose down
 
 ---
 
-## Application
+## Database Migrations
+
+Apply migrations:
+
+```bash
+docker compose exec app alembic upgrade head
+```
+
+Create new migration:
+
+```bash
+docker compose exec app alembic revision --autogenerate -m "message"
+```
+
+---
+
+## API Documentation
 
 Application URL:
 
@@ -115,41 +146,49 @@ Application URL:
 http://127.0.0.1:8000
 ```
 
-Swagger documentation:
+Swagger UI:
 
 ```text
 http://127.0.0.1:8000/docs
+```
+
+ReDoc:
+
+```text
+http://127.0.0.1:8000/redoc
 ```
 
 ---
 
 ## API Endpoints
 
-### Auth
+### Authentication
 
-- `POST /api/auth/register` - register new user
-- `POST /api/auth/login` - login and get access token
-- `GET /api/auth/confirmed_email/{token}` - confirm email
-- `POST /api/auth/request_email` - resend confirmation email
+- `POST /api/auth/register` — register user
+- `POST /api/auth/login` — authenticate user
+- `GET /api/auth/confirmed_email/{token}` — confirm email
+- `POST /api/auth/request_email` — resend confirmation email
+- `POST /api/auth/request_password_reset` — request password reset
+- `POST /api/auth/reset_password/{token}` — reset password
 
 ### Users
 
-- `GET /api/users/me` - get current user
-- `PATCH /api/users/avatar` - update user avatar
+- `GET /api/users/me` — get current user profile
+- `PATCH /api/users/avatar` — upload avatar (admin only)
 
 ### Contacts
 
-- `GET /api/contacts/` - get all user contacts
-- `GET /api/contacts/{contact_id}` - get contact by ID
-- `POST /api/contacts/` - create contact
-- `PUT /api/contacts/{contact_id}` - update contact
-- `DELETE /api/contacts/{contact_id}` - delete contact
-- `GET /api/contacts/search/?query=value` - search contacts
-- `GET /api/contacts/birthdays/` - upcoming birthdays
+- `GET /api/contacts/` — get all contacts
+- `GET /api/contacts/{contact_id}` — get contact by ID
+- `POST /api/contacts/` — create contact
+- `PUT /api/contacts/{contact_id}` — update contact
+- `DELETE /api/contacts/{contact_id}` — delete contact
+- `GET /api/contacts/search/?query=value` — search contacts
+- `GET /api/contacts/birthdays/` — upcoming birthdays
 
 ---
 
-## Example Contact Request
+## Example Contact Object
 
 ```json
 {
@@ -168,7 +207,7 @@ http://127.0.0.1:8000/docs
 
 Protected routes require a Bearer token.
 
-Example header:
+Example:
 
 ```text
 Authorization: Bearer your_access_token
@@ -183,38 +222,79 @@ password=your_password
 
 ---
 
+## Testing
+
+Run tests:
+
+```bash
+poetry run pytest
+```
+
+Run tests with coverage:
+
+```bash
+poetry run pytest --cov=src tests/
+```
+
+Current coverage:
+
+```text
+79%
+```
+
+---
+
+## Sphinx Documentation
+
+Build documentation:
+
+```bash
+cd docs
+poetry run make html
+```
+
+Open generated documentation:
+
+```bash
+open build/html/index.html
+```
+
+---
+
 ## Project Structure
 
 ```text
 src/
-  api/
-    auth.py
-    contacts.py
-    users.py
-  conf/
-    config.py
-  database/
-    db.py
-    models.py
-  repository/
-    contacts.py
-    users.py
-  services/
-    auth.py
-    email.py
-    limiter.py
-    upload_file.py
-    templates/
-      verify_email.html
-  schemas.py
+├── api/
+│   ├── auth.py
+│   ├── contacts.py
+│   └── users.py
+├── conf/
+│   └── config.py
+├── database/
+│   ├── db.py
+│   └── models.py
+├── repository/
+│   ├── contacts.py
+│   └── users.py
+├── services/
+│   ├── auth.py
+│   ├── email.py
+│   ├── limiter.py
+│   ├── redis_cache.py
+│   ├── upload_file.py
+│   └── templates/
+├── schemas.py
 
-main.py
-
+tests/
+docs/
 migrations/
 
+main.py
 Dockerfile
 docker-compose.yml
-.dockerignore
+pyproject.toml
+README.md
 ```
 
 ---
@@ -223,7 +303,8 @@ docker-compose.yml
 
 - all sensitive data is stored in `.env`
 - `.env` should not be committed to GitHub
-- use `.env.example` for example configuration
 - passwords are stored only as hashes
+- Redis is used for caching authenticated users
 - users can access only their own contacts
-- Redis is used for rate limiting
+- avatar uploads are handled with Cloudinary
+- only administrators can update avatars

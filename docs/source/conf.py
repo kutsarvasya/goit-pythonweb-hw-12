@@ -20,6 +20,7 @@ os.environ.setdefault("MAIL_STARTTLS", "False")
 os.environ.setdefault("MAIL_SSL_TLS", "True")
 os.environ.setdefault("USE_CREDENTIALS", "True")
 os.environ.setdefault("VALIDATE_CERTS", "False")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379")
 
 os.environ.setdefault("CLD_NAME", "test")
 os.environ.setdefault("CLD_API_KEY", "123456")
