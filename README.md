@@ -11,7 +11,7 @@ The project is built with FastAPI and includes JWT authentication, email verific
 - User registration and authentication
 - JWT access tokens
 - Password hashing with bcrypt
-- Email verification
+- Email verification via Brevo API
 - Resend verification email
 - Password reset via email
 - Redis caching for authenticated users
@@ -40,7 +40,8 @@ The project is built with FastAPI and includes JWT authentication, email verific
 - JWT
 - Redis
 - SlowAPI
-- FastAPI-Mail
+- Brevo API
+- httpx
 - Cloudinary
 - Pytest
 - Docker
@@ -78,16 +79,10 @@ JWT_SECRET=your_secret_key
 JWT_ALGORITHM=HS256
 JWT_EXPIRATION_SECONDS=3600
 
-MAIL_USERNAME=your_email@example.com
-MAIL_PASSWORD=your_password
+BREVO_API_KEY=your_brevo_api_key
+
 MAIL_FROM=your_email@example.com
-MAIL_PORT=465
-MAIL_SERVER=smtp.example.com
 MAIL_FROM_NAME=Contacts API
-MAIL_STARTTLS=False
-MAIL_SSL_TLS=True
-USE_CREDENTIALS=True
-VALIDATE_CERTS=False
 
 CLD_NAME=your_cloudinary_name
 CLD_API_KEY=your_cloudinary_api_key
@@ -274,6 +269,10 @@ Coverage includes:
 - Users routes tests
 - Integration tests
 
+### Coverage Report
+
+![Coverage Report](assets/coverage.png)
+
 ---
 
 ## Sphinx Documentation
@@ -340,41 +339,4 @@ README.md
 - Users can access only their own contacts
 - Avatar uploads are handled with Cloudinary
 - Only administrators can update avatars
-
-## Testing
-
-Run tests:
-
-```bash
-poetry run pytest
-```
-
-Run tests with coverage:
-
-```bash
-poetry run pytest --cov=src tests/
-```
-
-Generate HTML coverage report:
-
-```bash
-poetry run pytest --cov=src tests/ --cov-report=html
-```
-
-Current test coverage:
-
-```text
-79%
-```
-
-Coverage includes:
-
-- Repository unit tests
-- Authentication tests
-- Contacts routes tests
-- Users routes tests
-- Integration tests
-
-### Coverage Report
-
-![Coverage Report](assets/coverage.png)
+- Email delivery is implemented with Brevo API

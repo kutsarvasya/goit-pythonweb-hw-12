@@ -5,10 +5,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """
     Application configuration settings.
-
-    Loads environment variables from the .env file,
-    including database credentials, JWT configuration,
-    email settings, and Cloudinary credentials.
     """
 
     DB_URL: str
@@ -17,16 +13,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_EXPIRATION_SECONDS: int
 
-    MAIL_USERNAME: EmailStr
-    MAIL_PASSWORD: str
+    BREVO_API_KEY: str
+
     MAIL_FROM: EmailStr
-    MAIL_PORT: int
-    MAIL_SERVER: str
     MAIL_FROM_NAME: str
-    MAIL_STARTTLS: bool
-    MAIL_SSL_TLS: bool
-    USE_CREDENTIALS: bool
-    VALIDATE_CERTS: bool
+
     REDIS_URL: str
 
     CLD_NAME: str

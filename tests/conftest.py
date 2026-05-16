@@ -20,7 +20,7 @@ os.environ.setdefault("JWT_SECRET", "test_secret")
 os.environ.setdefault("JWT_ALGORITHM", "HS256")
 os.environ.setdefault("JWT_EXPIRATION_SECONDS", "3600")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379")
-
+os.environ.setdefault("BREVO_API_KEY", "test_brevo_api_key")
 os.environ.setdefault("MAIL_USERNAME", "test@example.com")
 os.environ.setdefault("MAIL_PASSWORD", "test_password")
 os.environ.setdefault("MAIL_FROM", "test@example.com")

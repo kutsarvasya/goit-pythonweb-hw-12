@@ -1,63 +1,69 @@
-from pathlib import Path
-
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
-from fastapi_mail.errors import ConnectionErrors
+import httpx
 from pydantic import EmailStr
 
 from src.conf.config import config
 from src.services.auth import create_email_token
 
-conf = ConnectionConfig(
-    MAIL_USERNAME=config.MAIL_USERNAME,
-    MAIL_PASSWORD=config.MAIL_PASSWORD,
-    MAIL_FROM=config.MAIL_FROM,
-    MAIL_PORT=config.MAIL_PORT,
-    MAIL_SERVER=config.MAIL_SERVER,
-    MAIL_FROM_NAME=config.MAIL_FROM_NAME,
-    MAIL_STARTTLS=config.MAIL_STARTTLS,
-    MAIL_SSL_TLS=config.MAIL_SSL_TLS,
-    USE_CREDENTIALS=config.USE_CREDENTIALS,
-    VALIDATE_CERTS=config.VALIDATE_CERTS,
-    TEMPLATE_FOLDER=Path(__file__).parent / "templates",
-)
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+
+
+async def send_brevo_email(
+    email: EmailStr,
+    subject: str,
+    html_content: str,
+):
+    headers = {
+        "accept": "application/json",
+        "api-key": config.BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "sender": {
+            "name": config.MAIL_FROM_NAME,
+            "email": str(config.MAIL_FROM),
+        },
+        "to": [
+            {
+                "email": str(email),
+            }
+        ],
+        "subject": subject,
+        "htmlContent": html_content,
+    }
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.post(
+            BREVO_API_URL,
+            headers=headers,
+            json=payload,
+        )
+
+    response.raise_for_status()
 
 
 async def send_email(email: EmailStr, username: str, host: str):
     """
-    Send email verification message.
-
-    Generates verification token and sends
-    HTML email with confirmation link.
-
-    Args:
-        email: Recipient email address.
-        username: Username of recipient.
-        host: Application base URL.
+    Send email verification message using Brevo API.
     """
 
-    try:
-        token_verification = await create_email_token({"sub": email})
+    token_verification = await create_email_token({"sub": email})
 
-        message = MessageSchema(
-            subject="Confirm your email",
-            recipients=[email],
-            template_body={
-                "host": host,
-                "username": username,
-                "token": token_verification,
-            },
-            subtype=MessageType.html,
-        )
+    confirm_url = f"{host}api/auth/confirmed_email/{token_verification}"
 
-        fm = FastMail(conf)
+    html_content = f"""
+    <h2>Hello, {username}!</h2>
+    <p>Please confirm your email address.</p>
+    <p>
+        <a href="{confirm_url}">Confirm email</a>
+    </p>
+    """
 
-        await fm.send_message(
-            message,
-            template_name="verify_email.html",
-        )
-
-    except ConnectionErrors as err:
-        print(err)
+    await send_brevo_email(
+        email=email,
+        subject="Confirm your email",
+        html_content=html_content,
+    )
 
 
 async def send_reset_password_email(
@@ -66,37 +72,24 @@ async def send_reset_password_email(
     host: str,
 ):
     """
-    Send password reset email.
-
-    Generates password reset token
-    and sends email with reset link.
-
-    Args:
-        email: Recipient email address.
-        username: Username of recipient.
-        host: Application base URL.
+    Send password reset message using Brevo API.
     """
 
-    try:
-        token_reset = await create_email_token({"sub": email})
+    token_reset = await create_email_token({"sub": email})
 
-        message = MessageSchema(
-            subject="Account access request",
-            recipients=[email],
-            template_body={
-                "host": host,
-                "username": username,
-                "token": token_reset,
-            },
-            subtype=MessageType.html,
-        )
+    reset_url = f"{host}api/auth/reset_password/{token_reset}"
 
-        fm = FastMail(conf)
+    html_content = f"""
+    <h2>Hello, {username}!</h2>
+    <p>You requested a password update.</p>
+    <p>
+        <a href="{reset_url}">Update password</a>
+    </p>
+    <p>If you did not request this, you can ignore this email.</p>
+    """
 
-        await fm.send_message(
-            message,
-            template_name="reset_password.html",
-        )
-
-    except ConnectionErrors as err:
-        print(err)
+    await send_brevo_email(
+        email=email,
+        subject="Account access request",
+        html_content=html_content,
+    )
