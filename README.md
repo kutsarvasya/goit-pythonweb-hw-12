@@ -8,23 +8,23 @@ The project is built with FastAPI and includes JWT authentication, email verific
 
 ## Features
 
-- user registration and authentication
+- User registration and authentication
 - JWT access tokens
-- password hashing with bcrypt
-- email verification
-- resend verification email
-- password reset via email
+- Password hashing with bcrypt
+- Email verification
+- Resend verification email
+- Password reset via email
 - Redis caching for authenticated users
-- role-based access (`user` / `admin`)
-- upload avatars using Cloudinary
-- rate limiting with SlowAPI
+- Role-based access control (`user` / `admin`)
+- Avatar upload with Cloudinary
+- Rate limiting with SlowAPI
 - CRUD operations for contacts
-- contact search by first name, last name, or email
-- upcoming birthdays endpoint
-- access only to personal contacts
-- asynchronous PostgreSQL database operations
+- Contact search by first name, last name, or email
+- Upcoming birthdays endpoint
+- Access only to personal contacts
+- Asynchronous PostgreSQL operations
 - Docker and Docker Compose support
-- unit and integration testing
+- Unit and integration tests
 - Sphinx documentation
 
 ---
@@ -72,7 +72,7 @@ poetry install
 Create a `.env` file in the project root.
 
 ```env
-DB_URL=postgresql+asyncpg://postgres:567234@db:5432/contacts_app
+DB_URL=postgresql+asyncpg://postgres:password@db:5432/contacts_app
 
 JWT_SECRET=your_secret_key
 JWT_ALGORITHM=HS256
@@ -108,7 +108,7 @@ Build and start containers:
 docker compose up --build
 ```
 
-Run in background:
+Run in background mode:
 
 ```bash
 docker compose up -d
@@ -130,7 +130,7 @@ Apply migrations:
 docker compose exec app alembic upgrade head
 ```
 
-Create new migration:
+Create a new migration:
 
 ```bash
 docker compose exec app alembic revision --autogenerate -m "message"
@@ -139,6 +139,8 @@ docker compose exec app alembic revision --autogenerate -m "message"
 ---
 
 ## API Documentation
+
+### Local
 
 Application URL:
 
@@ -156,6 +158,22 @@ ReDoc:
 
 ```text
 http://127.0.0.1:8000/redoc
+```
+
+---
+
+## Deployment
+
+Application deployed on Render:
+
+```text
+https://contacts-fastapi.onrender.com/
+```
+
+Swagger documentation:
+
+```text
+https://contacts-fastapi.onrender.com/docs
 ```
 
 ---
@@ -236,11 +254,25 @@ Run tests with coverage:
 poetry run pytest --cov=src tests/
 ```
 
-Current coverage:
+Generate HTML coverage report:
+
+```bash
+poetry run pytest --cov=src tests/ --cov-report=html
+```
+
+Current test coverage:
 
 ```text
 79%
 ```
+
+Coverage includes:
+
+- Repository unit tests
+- Authentication tests
+- Contacts routes tests
+- Users routes tests
+- Integration tests
 
 ---
 
@@ -301,10 +333,48 @@ README.md
 
 ## Notes
 
-- all sensitive data is stored in `.env`
-- `.env` should not be committed to GitHub
-- passwords are stored only as hashes
+- All sensitive data is stored in `.env`
+- `.env` should never be committed to GitHub
+- Passwords are stored only as hashes
 - Redis is used for caching authenticated users
-- users can access only their own contacts
-- avatar uploads are handled with Cloudinary
-- only administrators can update avatars
+- Users can access only their own contacts
+- Avatar uploads are handled with Cloudinary
+- Only administrators can update avatars
+
+## Testing
+
+Run tests:
+
+```bash
+poetry run pytest
+```
+
+Run tests with coverage:
+
+```bash
+poetry run pytest --cov=src tests/
+```
+
+Generate HTML coverage report:
+
+```bash
+poetry run pytest --cov=src tests/ --cov-report=html
+```
+
+Current test coverage:
+
+```text
+79%
+```
+
+Coverage includes:
+
+- Repository unit tests
+- Authentication tests
+- Contacts routes tests
+- Users routes tests
+- Integration tests
+
+### Coverage Report
+
+![Coverage Report](assets/coverage.png)
