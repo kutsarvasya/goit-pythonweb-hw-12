@@ -1,5 +1,5 @@
 from datetime import date, datetime
-
+from src.database.models import UserRole
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
@@ -55,7 +55,7 @@ class UserResponse(BaseModel):
     avatar: str | None = None
     confirmed: bool
     created_at: datetime | None = None
-
+    role: UserRole
     model_config = ConfigDict(from_attributes=True)
 
 

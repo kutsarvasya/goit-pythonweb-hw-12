@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
-from src.database.models import User
+from src.database.models import User, UserRole
 from src.schemas import UserResponse
-from src.services.auth import get_current_user
+from src.services.auth import get_current_user, RoleChecker
 from src.services.limiter import limiter
 from src.conf.config import config
 from src.repository.users import UserRepository
@@ -12,6 +12,7 @@ from src.repository.users import UserRepository
 from src.services.upload_file import UploadFileService
 
 router = APIRouter(prefix="/users", tags=["users"])
+admin_access = RoleChecker([UserRole.ADMIN])
 
 
 @router.get(
@@ -48,7 +49,7 @@ async def me(
 )
 async def update_avatar_user(
     file: UploadFile = File(),
-    user: User = Depends(get_current_user),
+    user: User = Depends(admin_access),
     db: AsyncSession = Depends(get_db),
 ):
     """

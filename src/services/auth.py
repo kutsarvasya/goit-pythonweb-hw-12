@@ -210,3 +210,46 @@ async def get_email_from_token(token: str):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid token for email verification",
         )
+
+
+class RoleChecker:
+    """
+    Dependency for checking user roles.
+
+    Allows access only to users with permitted roles.
+    """
+
+    def __init__(self, allowed_roles: list):
+        """
+        Initialize role checker.
+
+        Args:
+            allowed_roles: List of roles allowed to access endpoint.
+        """
+
+        self.allowed_roles = allowed_roles
+
+    async def __call__(
+        self,
+        user=Depends(get_current_user),
+    ):
+        """
+        Check current user role.
+
+        Args:
+            user: Current authenticated user.
+
+        Returns:
+            Current user if role is allowed.
+
+        Raises:
+            HTTPException: If user role is not allowed.
+        """
+
+        if user.role not in self.allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Operation forbidden",
+            )
+
+        return user

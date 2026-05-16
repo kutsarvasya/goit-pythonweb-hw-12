@@ -1,5 +1,6 @@
 from datetime import date, datetime
-
+import enum
+from sqlalchemy import Enum
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Boolean, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -10,6 +11,13 @@ class Base(DeclarativeBase):
     """
 
     pass
+
+
+class UserRole(enum.Enum):
+    """User roles for access control."""
+
+    USER = "user"
+    ADMIN = "admin"
 
 
 class User(Base):
@@ -29,6 +37,11 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     avatar: Mapped[str | None] = mapped_column(String(255), nullable=True)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole),
+        default=UserRole.USER,
+        nullable=False,
+    )
 
 
 class Contact(Base):
